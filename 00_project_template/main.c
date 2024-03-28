@@ -186,7 +186,11 @@ void multiplexar_displays(int64_t numero) {
     digitos[2] = milliseconds / 10 % 10;    // Obtener el tercer dígito (decenas)
     digitos[3] = milliseconds / 1 % 10;           // Obtener el cuarto dígito (unidades)
 
-    while (true) {
+    // Variable para controlar si se ha presionado nuevamente el botón
+    bool boton_presionado = false;
+
+    // Bucle principal para mostrar el tiempo de reacción en los displays
+    while (!boton_presionado) {
         for (int i = 0; i < 4; i++) {
             // Activar el transistor correspondiente para seleccionar el display
             for (int j = 0; j < 4; j++) {
@@ -196,8 +200,22 @@ void multiplexar_displays(int64_t numero) {
             // Mostrar el dígito en el display seleccionado
             display_numero(digitos[i]);
 
+            // Verificar si se ha presionado nuevamente el botón
+            if (is_button_pressed(start_button)) {
+                boton_presionado = true;
+                break; // Salir del bucle for
+            }
+
             busy_wait_us(1000); // Ajusta este valor según la velocidad de actualización que necesites
         } 
     }
-}
 
+    // Limpiar los displays
+    for (int i = 0; i < 4; i++) {
+        gpio_put(pin_transistor[i], false);
+        // Apagar todos los segmentos
+        for (int j = 0; j < 7; j++) {
+            gpio_put(segmentos[j], false);
+        }
+    }
+}
